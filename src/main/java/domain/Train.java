@@ -16,10 +16,11 @@ public class Train implements Cloneable{
 		allRollingStock = new ArrayList<RollingStock>();
 	}
 	
-	public Train clone() {
+	public Train clone(String id) {
 		Train object = null;
 		try {
 			object = (Train) super.clone();
+			object.setId(id);
 		} catch (CloneNotSupportedException e) {
 			System.out.println("oh oh");
 			e.printStackTrace();

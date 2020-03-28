@@ -3,7 +3,7 @@ grammar RichRail;
 // Rules
 command         : newcommand | addcommand | getcommand | delcommand | remcommand;
 newcommand      : newtraincommand | newwagoncommand;
-newtraincommand : 'new' 'train' ID 'engine' ID;
+newtraincommand : 'new' 'train' ID 'engine' ID ('clone' ID)?;
 newwagoncommand : 'new' 'wagon' ID 'numseats' NUMBER;
 addcommand		: 'add' type ID 'to' ID;
 getcommand      : 'getnumseats' type id=ID;

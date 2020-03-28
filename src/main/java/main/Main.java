@@ -178,7 +178,9 @@ public class Main extends javax.swing.JFrame implements ActionListener {
 
 			String selection = (String) rollingBox.getSelectedItem();
 			System.out.println("deleting " + selection);
-			drawTrain(train);
+			setVisible(false);
+//			drawTrain(train);
+			new CommandLineFrame();
 
 		}
 	}

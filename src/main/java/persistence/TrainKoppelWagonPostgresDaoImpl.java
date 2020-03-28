@@ -33,7 +33,7 @@ public class TrainKoppelWagonPostgresDaoImpl implements TrainKoppelWagonDao{
 
 		try {
 			String strQuery = "SELECT tw.wagon_TYPE, tw.index FROM train\r\n"
-					+ "	INNER JOIN train_wagon as tw ON ? = tw.train_ID;";
+					+ "	INNER JOIN train_wagon as tw ON ID = tw.train_ID WHERE ID = ?;";
 			PreparedStatement pstmt = conn.prepareStatement(strQuery);
 			pstmt.setString(1, id);
 			ResultSet rs = pstmt.executeQuery();

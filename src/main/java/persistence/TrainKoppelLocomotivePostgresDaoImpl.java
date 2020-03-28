@@ -30,16 +30,16 @@ public class TrainKoppelLocomotivePostgresDaoImpl implements TrainKoppelLocomoti
 	@Override
 	public List<Locomotive> findByTrainId(String id) {
 		List<Locomotive> deLocomotives = new ArrayList<Locomotive>();
+		LocomotiveFactory l = new LocomotiveFactory();
 
 		try {
 			String strQuery = "SELECT tl.locomotive_TYPE, tl.index FROM train\r\n"
-					+ "	INNER JOIN train_locomotive as tl ON ? = tl.train_ID;";
+					+ "	INNER JOIN train_locomotive as tl ON ID = tl.train_ID WHERE ID = ?;";
 			PreparedStatement pstmt = conn.prepareStatement(strQuery);
 			pstmt.setString(1, id);
 			ResultSet rs = pstmt.executeQuery();
 
 			while (rs.next()) {
-				LocomotiveFactory l = new LocomotiveFactory();
 				Locomotive loco = l.createLocomotive(rs.getString("LOCOMOTIVE_TYPE"));
 				loco.setIndex(rs.getInt("INDEX"));
 				deLocomotives.add(loco);

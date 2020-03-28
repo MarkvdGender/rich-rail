@@ -71,6 +71,9 @@ public class TrainPostgresDaoImpl implements TrainDao {
 	@Override
 	public Train findById(String id) {
 		Train train = new Train();
+		LocomotiveFactory lC = new LocomotiveFactory();
+		List<RollingStock> deRollingStock = new ArrayList<RollingStock>();
+		List<RollingStock> deRollingStockOrdered = new ArrayList<RollingStock>();
 
 		try {
 			String strQuery = "SELECT * FROM TRAIN WHERE ID = ?";
@@ -79,26 +82,25 @@ public class TrainPostgresDaoImpl implements TrainDao {
 			ResultSet rs = pstmt.executeQuery();
 
 			while (rs.next()) {
-				LocomotiveFactory lC = new LocomotiveFactory();
 				Locomotive engine = lC.createLocomotive(rs.getString("LOCOMOTIVE_TYPE"));
 				List<Locomotive> deLocomotives = tklpdi.findByTrainId(id);
 				List<Wagon> deWagons = tkwpdi.findByTrainId(id);
-				List<RollingStock> deRollingStock = new ArrayList<RollingStock>();
-				int len = deWagons.size();
-				len += deLocomotives.size();
-				for(int i=0; i<len; i++) {
-					deRollingStock.add(new Wagon());
+				for(Wagon w : deWagons) {
+					deRollingStock.add(w);
 				}
-				for (Wagon w : deWagons) {
-					deRollingStock.set(w.getIndex(), w);
+				for(Locomotive l : deLocomotives) {
+					deRollingStock.add(l);
 				}
-				for (Locomotive l : deLocomotives) {
-					deRollingStock.set(l.getIndex(), l);
+				for(int i=0; i<deRollingStock.size(); i++) {
+					for(RollingStock r : deRollingStock) {
+						if(r.getIndex()==i) {
+							deRollingStockOrdered.add(r);
+						}
+					}
 				}
 				train.setId(id);
 				train.setEngine(engine);
 				train.setAllRollingStock(deRollingStock);
-
 			}
 		} catch (SQLException sqle) {
 
@@ -115,6 +117,7 @@ public class TrainPostgresDaoImpl implements TrainDao {
 			PreparedStatement pstmt = conn.prepareStatement(strQuery);
 			pstmt.setString(1, train.getId());
 			pstmt.setString(2, train.getEngine().getType());
+			pstmt.executeUpdate();
 			for (int i=0; i<train.getAllRollingStock().size(); i++) {
 				RollingStock r = train.getAllRollingStock().get(i);
 				if (r instanceof Wagon) {
@@ -123,7 +126,6 @@ public class TrainPostgresDaoImpl implements TrainDao {
 					tklpdi.save(r, train.getId(), i);
 				}
 			}
-			pstmt.executeUpdate();
 
 			return true;
 		} catch (SQLException sqle) {

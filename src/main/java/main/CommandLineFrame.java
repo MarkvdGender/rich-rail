@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -15,13 +16,18 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import domain.RollingStock;
+import domain.Train;
+import domain.Wagon;
+import observer.train.TrainObserver;
 import presentation.parser.Command;
 
-public class GUI {
-
+public class CommandLineFrame implements TrainObserver{
+	
 	private Command command = new Command();
-
-	public GUI() {
+	private JTextArea output = new JTextArea();
+	private String trainsDisplay = "";
+	public CommandLineFrame() {
 
 //		frame maken
 		JFrame frame = new JFrame("eerste frame");
@@ -42,8 +48,6 @@ public class GUI {
 		JLabel label = new JLabel();
 		label.setPreferredSize(new Dimension(20, 20));
 
-		JTextArea output = new JTextArea();
-
 		output.setPreferredSize(new Dimension(100, 600));
 		output.setEditable(false);
 		output.setBackground(Color.BLACK);
@@ -62,7 +66,7 @@ public class GUI {
 		execute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				command.command(input.getText());
-				output.append(" "+input.getText()+"\n");
+
 			}
 		});
 
@@ -84,8 +88,26 @@ public class GUI {
 
 	}
 
-	public static void main(String[] args) {
-		new GUI();
+	
+
+	@Override
+	public void update(List<Train> trains, List<Wagon> wagons) {
+		trainsDisplay="wagons:";
+		for(Wagon w : wagons) {
+			trainsDisplay+="("+w.getType()+":"+w.getSeats()+")";
+		}
+		trainsDisplay+="\n trains \n";
+		for(Train t : trains) {
+			trainsDisplay+="train "+t.getId()+": \n";
+			trainsDisplay+="["+t.getEngine().getType()+"]";
+			for(RollingStock r : t.getAllRollingStock()) {
+				trainsDisplay+="-("+r.getType()+")";
+			}
+			trainsDisplay+="\n";
+		}
+		
+		output.setText(trainsDisplay);
+		System.out.println(trainsDisplay);
 	}
 
 }
