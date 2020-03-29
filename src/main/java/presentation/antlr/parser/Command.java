@@ -1,4 +1,4 @@
-package presentation.parser;
+package presentation.antlr.parser;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;

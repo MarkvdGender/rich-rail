@@ -1,4 +1,4 @@
-package presentation.parser;
+package presentation.antlr.parser;
 
 import java.util.List;
 
@@ -9,7 +9,6 @@ import domain.RollingStock;
 import domain.Train;
 import domain.Wagon;
 import domain.locomotive.Locomotive;
-import observer.train.TrainSubject;
 import parser.RichRailBaseListener;
 import parser.RichRailParser;
 import persistence.TrainDao;
@@ -18,6 +17,7 @@ import persistence.WagonDao;
 import persistence.WagonPostgresDaoImpl;
 import presentation.WagonDirector;
 import service.locomotiveFactory.LocomotiveFactory;
+import service.observer.TrainSubject;
 import service.wagonBuilder.CustomWagonBuilder;
 
 public class RichRailCli extends RichRailBaseListener {

@@ -1,8 +1,6 @@
-package main;
+package presentation;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -10,43 +8,34 @@ import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import domain.RollingStock;
 import domain.Train;
 import domain.Wagon;
 import domain.locomotive.Locomotive;
-import domain.locomotive.SteamLocomotive;
-import main.visualComponents.VisualComponent;
-import main.visualComponents.VisualEngine;
-import main.visualComponents.VisualLocomotive;
-import main.visualComponents.VisualWagon;
-import persistence.TrainDao;
-import persistence.TrainPostgresDaoImpl;
-import presentation.WagonDirector;
-import service.wagonBuilder.FirstClassWagonBuilder;
-import service.wagonBuilder.FreightWagonBuilder;
-import service.wagonBuilder.PassengerWagonBuilder;
-import service.wagonBuilder.WagonBuilder;
+import presentation.frame.CommandLineFrame;
+import service.observer.TrainObserver;
+import service.observer.TrainSubject;
 
-public class Main extends javax.swing.JFrame implements ActionListener {
+public class GUI extends javax.swing.JFrame implements TrainObserver{
+	
+	private TrainSubject subject = TrainSubject.getInstance();
 
 //	DOMEIN OBJECTEN
 	private JComboBox rollingBox;
+	
 
-	private Train train;
-	private List<RollingStock> allRollingStock = new ArrayList<RollingStock>();
-
-	private WagonBuilder wagonBuilder;
 //	DYNAMISCHE INFORMATIE
+	
+	private List<String> locoTypes = new ArrayList<String>();
 
 //	input naam van de trein
 	private JTextField tfNewTrain;
@@ -54,7 +43,6 @@ public class Main extends javax.swing.JFrame implements ActionListener {
 //	STATISCHE FRONT END
 	private JPanel jPanel1;
 
-	private JTextField tfCurrentTrain;
 
 	private JButton btnNewTrain;
 	private JButton btnDeleteRollingStock;
@@ -63,28 +51,27 @@ public class Main extends javax.swing.JFrame implements ActionListener {
 	private JPanel editPanel;
 	private JPanel drawPanel;
 
-	private HashMap numberOfWagons;
+
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Main inst = new Main();
-				inst.setLocationRelativeTo(null);
-				inst.setVisible(true);
+				new GUI();
 			}
 		});
 
-	
 
 	}
 
-	public Main() {
+	public GUI() {
 		super();
 		initGUI();
 	}
 
 	private void initGUI() {
 		try {
+			
+		
 			this.setTitle("Rich Rail");
 			GridBagLayout thisLayout = new GridBagLayout();
 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -101,10 +88,11 @@ public class Main extends javax.swing.JFrame implements ActionListener {
 						GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 				{
 					drawPanel = new JPanel();
-					drawPanel.setBackground(Color.WHITE);
+//					drawPanel.setBackground(Color.WHITE);
 					jPanel1.add(drawPanel, BorderLayout.CENTER);
 				}
 			}
+			subject.addObserver(this);
 			{
 				editPanel = new JPanel();
 				GridBagLayout editPanelLayout = new GridBagLayout();
@@ -112,7 +100,7 @@ public class Main extends javax.swing.JFrame implements ActionListener {
 				getContentPane().add(editPanel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
 						GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 				{
-					editPanel.add(new Label("Train Name:"), new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+					editPanel.add(new Label("Train id:"), new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 					editPanel.setBounds(10, 10, 100, 15);
 					editPanelLayout.rowWeights = new double[] { 0.1, 0.1, 0.1, 0.1 };
@@ -129,11 +117,15 @@ public class Main extends javax.swing.JFrame implements ActionListener {
 					btnNewTrain = new JButton("Create New Train");
 					editPanel.add(btnNewTrain, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
 							GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-					btnNewTrain.addActionListener(this);
+					btnNewTrain.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							subject.newTrain(tfNewTrain.getText(), rollingBox.getSelectedItem().toString());
+
+						}
+					});
 				}
 				{
-					String[] rollingOptions = { "First Class", "Freight", "Passenger", "Steam" };
-					rollingBox = new JComboBox(rollingOptions);
+					rollingBox = new JComboBox(locoTypes.toArray());
 					editPanel.add(rollingBox, new GridBagConstraints(1, 1, 1, 2, 0.0, 0.0, GridBagConstraints.CENTER,
 							GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 
@@ -142,99 +134,66 @@ public class Main extends javax.swing.JFrame implements ActionListener {
 					btnAddRollingStock = new JButton("Add RollingStock");
 					editPanel.add(btnAddRollingStock, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-					btnAddRollingStock.addActionListener(this);
+					btnAddRollingStock.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							new CommandLineFrame();
+
+						}
+					});
 				}
 				{
 					btnDeleteRollingStock = new JButton("Delete RollingStock");
 					editPanel.add(btnDeleteRollingStock, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0,
 							GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-					btnDeleteRollingStock.addActionListener(this);
+					btnDeleteRollingStock.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+
+
+						}
+					});
 				}
 			}
 
 			setSize(800, 600);
-			numberOfWagons = new HashMap();
+			setVisible(true);
+			setLocationRelativeTo(null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-//	EVENTHANDLER (kan netter door in de buttons te definen of in andere klas te zetten en die klasse aan te roepen)
-	public void actionPerformed(ActionEvent event) {
-		if (event.getSource() == btnNewTrain) {
-			String trainName = tfNewTrain.getText();
-			if (trainName != null && trainName.trim().length() > 0) {
-				addTrain(trainName);
-				drawTrain(train);
-			}
-		} else if (event.getSource() == btnAddRollingStock) {
-
-			String selection = (String) rollingBox.getSelectedItem();
-			addRollingStock(selection);
-			drawTrain(train);
-
-		} else if (event.getSource() == btnDeleteRollingStock) {
-
-			String selection = (String) rollingBox.getSelectedItem();
-			System.out.println("deleting " + selection);
-			setVisible(false);
-//			drawTrain(train);
-			new CommandLineFrame();
-
+//	public void drawTrain(Train train) {
+//		System.out.println("GUI drawtrain call");
+//		VisualComponent visualEngine = new VisualEngine();
+//		VisualComponent visualLocomotive = new VisualLocomotive();
+//		VisualComponent visualWagon = new VisualWagon();
+//		Graphics g = drawPanel.getGraphics();
+//		int index = 0;
+//		visualEngine.draw(train.getId(), 0, g);
+//		for (RollingStock r : train.getAllRollingStock()) {
+//			index++;
+//			if (r instanceof Wagon) {
+//				visualWagon.draw(r.getType(), index, g);
+//			} else if (r instanceof Locomotive) {
+//				visualLocomotive.draw(r.getType(), index, g);
+//			}
+//
+//		}
+//
+//	}
+	
+	@Override
+	public void update(List<Train> trains, List<Wagon> wagons, List<Locomotive> locomotives) {
+		for(Locomotive l : locomotives) {
+			locoTypes.add(l.getType());
 		}
-	}
+		
+		JFrame frame = new DrawPanel().getFrame();
+		frame.invalidate();
+		frame.invalidate();
+		frame.repaint();
 
-// FUNCTIES (moeten uit deze klasse)
-
-	public void addTrain(String name) {
-
-		train = new Train();
-		train.setName(name);
-
-	}
-
-	public boolean addRollingStock(String code) {
-		RollingStock wagon;
-		WagonDirector wagonDirector;
-		if (code.equals("First Class")) {
-			wagonBuilder = new FirstClassWagonBuilder();
-		} else if (code.equals("Freight")) {
-			wagonBuilder = new FreightWagonBuilder();
-		} else if (code.equals("Passenger")) {
-			wagonBuilder = new PassengerWagonBuilder();
-		} else if (code.equals("Steam")) {
-			allRollingStock.add(new SteamLocomotive());
-			return true;
-		} else {
-			return false;
-		}
-
-		wagonDirector = new WagonDirector(wagonBuilder);
-		wagonDirector.makeWagon();
-		wagon = wagonDirector.getWagon();
-		allRollingStock.add(wagon);
-
-		return true;
-
-	}
-
-	public void drawTrain(Train train) {
-		VisualComponent visualEngine = new VisualEngine();
-		VisualComponent visualLocomotive = new VisualLocomotive();
-		VisualComponent visualWagon = new VisualWagon();
-		Graphics g = drawPanel.getGraphics();
-		int index = 0;
-		visualEngine.draw(train.getName(), 0, g);
-		for (RollingStock r : allRollingStock) {
-			index++;
-			if (r instanceof Wagon) {
-				visualWagon.draw(r.getType(), index, g);
-			} else if (r instanceof Locomotive) {
-				visualLocomotive.draw(r.getType(), index, g);
-			}
-
-		}
-
+		
 	}
 }

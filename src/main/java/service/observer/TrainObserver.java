@@ -1,4 +1,4 @@
-package observer.train;
+package service.observer;
 
 import java.util.List;
 

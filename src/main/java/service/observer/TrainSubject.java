@@ -1,4 +1,4 @@
-package observer.train;
+package service.observer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.List;
 import domain.Train;
 import domain.Wagon;
 import domain.locomotive.Locomotive;
-import main.CommandLineFrame;
 import persistence.LocomotiveDao;
 import persistence.LocomotivePostgresDaoImpl;
 import persistence.TrainDao;
@@ -14,6 +13,7 @@ import persistence.TrainPostgresDaoImpl;
 import persistence.WagonDao;
 import persistence.WagonPostgresDaoImpl;
 import presentation.WagonDirector;
+import presentation.frame.CommandLineFrame;
 import service.locomotiveFactory.LocomotiveFactory;
 import service.wagonBuilder.CustomWagonBuilder;
 
@@ -31,7 +31,6 @@ public class TrainSubject {
 	private WagonDirector wagonDirector;
 
 	private TrainSubject() {
-		observers.add(new CommandLineFrame());
 		trains = tpdi.findAll();
 		wagons = wpdi.findAll();
 		locomotives = lpdi.findAll();
@@ -43,9 +42,15 @@ public class TrainSubject {
 		}
 		return instance;
 	}
+	
+	public void addObserver(TrainObserver o ) {
+		observers.add(o);
+		o.update(trains, wagons, locomotives);
+		
+	}
 
 	public boolean newTrain(String id, String engine) {
-		if (findTrain(id) == null) {
+		if (findTrain(id) != null) {
 			System.out.println("train " + id + " already exists");
 			return false;
 		}
@@ -90,7 +95,6 @@ public class TrainSubject {
 				return t;
 			}
 		}
-		System.out.println("train " + id + " does not exist");
 		return null;
 	}
 
@@ -126,7 +130,6 @@ public class TrainSubject {
 				return w;
 			}
 		}
-		System.out.println("wagon " + type + " does not exist");
 		return null;
 	}
 

@@ -39,6 +39,7 @@ public class WagonPostgresDaoImpl implements WagonDao {
 			while (rs.next()) {
 				Wagon w = new Wagon();
 				w.setType(rs.getString("TYPE"));
+				w.setSeats(rs.getInt("SEATS"));
 				deWagons.add(w);
 
 			}

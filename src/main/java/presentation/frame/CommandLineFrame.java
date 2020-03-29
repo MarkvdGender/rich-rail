@@ -1,4 +1,4 @@
-package main;
+package presentation.frame;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -20,18 +20,23 @@ import domain.RollingStock;
 import domain.Train;
 import domain.Wagon;
 import domain.locomotive.Locomotive;
-import observer.train.TrainObserver;
-import presentation.parser.Command;
+import presentation.antlr.parser.Command;
+import service.observer.TrainObserver;
+import service.observer.TrainSubject;
 
-public class CommandLineFrame implements TrainObserver{
-	
+public class CommandLineFrame implements TrainObserver {
+
+	private TrainSubject subject = TrainSubject.getInstance();
+	private JFrame frame;
 	private Command command = new Command();
 	private JTextArea output = new JTextArea();
 	private String trainsDisplay = "";
-	public CommandLineFrame() {
 
+	public CommandLineFrame() {
+		
+		subject.addObserver(this);
 //		frame maken
-		JFrame frame = new JFrame("eerste frame");
+		frame = new JFrame("command line");
 
 //        panel maken
 		JPanel panel = new JPanel();
@@ -89,30 +94,27 @@ public class CommandLineFrame implements TrainObserver{
 
 	}
 
-	
-
 	@Override
 	public void update(List<Train> trains, List<Wagon> wagons, List<Locomotive> locomotives) {
-		trainsDisplay="locomotives: \n";
-		for(Locomotive l : locomotives) {
-			trainsDisplay+="["+l.getType()+"]";
+		trainsDisplay = "locomotives: \n";
+		for (Locomotive l : locomotives) {
+			trainsDisplay += "[" + l.getType() + "]";
 		}
-		trainsDisplay+="\n wagons: \n";
-		for(Wagon w : wagons) {
-			trainsDisplay+="("+w.getType()+":"+w.getSeats()+")";
+		trainsDisplay += "\n wagons: \n";
+		for (Wagon w : wagons) {
+			trainsDisplay += "(" + w.getType() + ":" + w.getSeats() + ")";
 		}
-		trainsDisplay+="\n trains \n";
-		for(Train t : trains) {
-			trainsDisplay+="train "+t.getId()+": \n";
-			trainsDisplay+="["+t.getEngine().getType()+"]";
-			for(RollingStock r : t.getAllRollingStock()) {
-				trainsDisplay+="-("+r.getType()+")";
+		trainsDisplay += "\n trains \n";
+		for (Train t : trains) {
+			trainsDisplay += "train " + t.getId() + ": \n";
+			trainsDisplay += "[" + t.getEngine().getType() + "]";
+			for (RollingStock r : t.getAllRollingStock()) {
+				trainsDisplay += "-(" + r.getType() + ")";
 			}
-			trainsDisplay+="\n";
+			trainsDisplay += "\n";
 		}
-		
+
 		output.setText(trainsDisplay);
-		System.out.println(trainsDisplay);
 	}
 
 }
