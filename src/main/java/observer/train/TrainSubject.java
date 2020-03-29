@@ -5,27 +5,36 @@ import java.util.List;
 
 import domain.Train;
 import domain.Wagon;
+import domain.locomotive.Locomotive;
 import main.CommandLineFrame;
+import persistence.LocomotiveDao;
+import persistence.LocomotivePostgresDaoImpl;
 import persistence.TrainDao;
 import persistence.TrainPostgresDaoImpl;
 import persistence.WagonDao;
 import persistence.WagonPostgresDaoImpl;
+import presentation.WagonDirector;
 import service.locomotiveFactory.LocomotiveFactory;
+import service.wagonBuilder.CustomWagonBuilder;
 
 public class TrainSubject {
 
 	private List<TrainObserver> observers = new ArrayList<TrainObserver>();
 	private List<Train> trains = new ArrayList<Train>();
 	private List<Wagon> wagons = new ArrayList<Wagon>();
+	private List<Locomotive> locomotives = new ArrayList<Locomotive>();
 	private static TrainSubject instance = null;
 	private TrainDao tpdi = TrainPostgresDaoImpl.getInstance();
 	private WagonDao wpdi = WagonPostgresDaoImpl.getInstance();
+	private LocomotiveDao lpdi = LocomotivePostgresDaoImpl.getInstance();
 	private LocomotiveFactory locomotiveFactory = new LocomotiveFactory();
+	private WagonDirector wagonDirector;
 
 	private TrainSubject() {
 		observers.add(new CommandLineFrame());
 		trains = tpdi.findAll();
 		wagons = wpdi.findAll();
+		locomotives = lpdi.findAll();
 	}
 
 	public static TrainSubject getInstance() {
@@ -36,23 +45,20 @@ public class TrainSubject {
 	}
 
 	public boolean newTrain(String id, String engine) {
-		for(Train t : trains) {
-			String existingId = t.getId();
-			if(existingId.contentEquals(id)) {
-				System.out.println("train "+id+" already exists");
-				return false;
-			}
+		if (findTrain(id) == null) {
+			System.out.println("train " + id + " already exists");
+			return false;
 		}
 		Train train = new Train();
 		train.setId(id);
 		train.setEngine(locomotiveFactory.createLocomotive(engine));
 		trains.add(train);
 		tpdi.save(train);
-		notifyObservers();
 		System.out.println("train " + train.getId() + " created");
+		notifyObservers();
 		return true;
 	}
-	
+
 	public void cloneTrain(Train train, String newId) {
 		Train clone = train.clone(newId);
 		trains.add(clone);
@@ -70,16 +76,12 @@ public class TrainSubject {
 		notifyObservers();
 	}
 
-	public boolean deleteTrain(String id) {
-		for (int i = 0; i < trains.size(); i++) {
-			if (trains.get(i).getId().contentEquals(id)) {
-				trains.remove(i);
-				tpdi.delete(id);
-				notifyObservers();
-				return true;
-			}
-		}
-		return false;
+	public void deleteTrain(String id) {
+		Train train = findTrain(id);
+		trains.remove(train);
+		System.out.println("train " + id + " removed");
+		notifyObservers();
+
 	}
 
 	public Train findTrain(String id) {
@@ -88,26 +90,70 @@ public class TrainSubject {
 				return t;
 			}
 		}
+		System.out.println("train " + id + " does not exist");
 		return null;
 	}
-	
-	public boolean newWagon(Wagon wagon) {
-		for(Wagon w : wagons) {
-			if(w.equals(wagon)) {
-				System.out.println("wagon "+w.getType()+" already exists");
-				return false;
-			}
+
+	public boolean addWagonToTrain(String trainId, String wagonType) {
+		Wagon wagon = findWagon(wagonType);
+		Train train = findTrain(trainId);
+		train.addRollingStock(wagon);
+		tpdi.update(train);
+		System.out.println("wagon " + wagonType + " added to train " + trainId);
+		notifyObservers();
+		return true;
+
+	}
+
+	public boolean newWagon(String type, int seats) {
+		if (findWagon(type) == null) {
+			System.out.println("wagon " + type + " already exists");
+			return false;
 		}
+		wagonDirector = new WagonDirector(new CustomWagonBuilder(type, seats));
+		wagonDirector.makeWagon();
+		Wagon wagon = wagonDirector.getWagon();
 		wagons.add(wagon);
 		wpdi.save(wagon);
+		System.out.println("wagon " + type + " created with " + seats + " seats");
 		notifyObservers();
-		System.out.println("wagon " + wagon.getType() + " created with "+wagon.getSeats()+" seats");
 		return true;
+	}
+
+	public Wagon findWagon(String type) {
+		for (Wagon w : wagons) {
+			if (w.getType().equals(type)) {
+				return w;
+			}
+		}
+		System.out.println("wagon " + type + " does not exist");
+		return null;
+	}
+
+	public boolean addLocomotiveToTrain(String trainId, String locomotiveType) {
+		Locomotive l = findLocomotive(locomotiveType);
+		Train t = findTrain(trainId);
+		t.addRollingStock(l);
+		tpdi.update(t);
+		System.out.println("locomotive " + locomotiveType + " added to train " + trainId);
+		notifyObservers();
+		return true;
+
+	}
+
+	public Locomotive findLocomotive(String type) {
+		for (Locomotive l : locomotives) {
+			if (l.getType().equals(type)) {
+				return l;
+			}
+		}
+		System.out.println("locomotive " + type + " does not exist");
+		return null;
 	}
 
 	public void notifyObservers() {
 		for (TrainObserver o : observers) {
-			o.update(trains, wagons);
+			o.update(trains, wagons, locomotives);
 		}
 	}
 

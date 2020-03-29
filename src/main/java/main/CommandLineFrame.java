@@ -19,6 +19,7 @@ import javax.swing.JTextField;
 import domain.RollingStock;
 import domain.Train;
 import domain.Wagon;
+import domain.locomotive.Locomotive;
 import observer.train.TrainObserver;
 import presentation.parser.Command;
 
@@ -91,8 +92,12 @@ public class CommandLineFrame implements TrainObserver{
 	
 
 	@Override
-	public void update(List<Train> trains, List<Wagon> wagons) {
-		trainsDisplay="wagons:";
+	public void update(List<Train> trains, List<Wagon> wagons, List<Locomotive> locomotives) {
+		trainsDisplay="locomotives: \n";
+		for(Locomotive l : locomotives) {
+			trainsDisplay+="["+l.getType()+"]";
+		}
+		trainsDisplay+="\n wagons: \n";
 		for(Wagon w : wagons) {
 			trainsDisplay+="("+w.getType()+":"+w.getSeats()+")";
 		}

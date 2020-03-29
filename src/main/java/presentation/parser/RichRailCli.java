@@ -58,14 +58,7 @@ public class RichRailCli extends RichRailBaseListener {
 		String type = ctx.getChild(2).toString();
 		String stringSeats = ctx.getChild(4).toString();
 		int seats = Integer.parseInt(stringSeats);
-		WagonDirector wagonDirector = new WagonDirector(new CustomWagonBuilder(type, seats));
-		wagonDirector.makeWagon();
-		Wagon wagon = wagonDirector.getWagon();
-		if (wpdi.save(wagon)) {
-			System.out.println("wagon " + type + " created with " + stringSeats + " seats");
-		} else {
-			System.out.println("wagon " + type + " already exists");
-		}
+		subject.newWagon(type, seats);
 
 	}
 
@@ -73,23 +66,11 @@ public class RichRailCli extends RichRailBaseListener {
 	public void exitAddcommand(RichRailParser.AddcommandContext ctx) {
 		String id = ctx.getChild(4).toString();
 		String rollingId = ctx.getChild(2).toString();
-		Train train = subject.findTrain(id);
-		RollingStock r;
 		if (type.equals("wagon")) {
-			r = wpdi.findByType(rollingId);
+			subject.addWagonToTrain(id, rollingId);
 		} else if (type.equals("locomotive")) {
-			LocomotiveFactory factory = new LocomotiveFactory();
-			r = factory.createLocomotive(rollingId);
-		} else {
-			r = null;
+			subject.addLocomotiveToTrain(id, rollingId);
 		}
-		List<RollingStock> rollingStock = train.getAllRollingStock();
-		System.out.println("rollingstock :" + r.getType());
-		rollingStock.add(r);
-		train.setAllRollingStock(rollingStock);
-		subject.updateTrain(train, id);
-		tpdi.update(train);
-		System.out.println(type + " " + ctx.getChild(2) + " added to train " + id);
 	}
 
 	@Override
@@ -97,15 +78,14 @@ public class RichRailCli extends RichRailBaseListener {
 		String id = ctx.getChild(2).toString();
 
 		if (type.equals("train")) {
-			Train train = tpdi.findById(id);
+			Train train = subject.findTrain(id);
 			System.out.println(train.getSeats());
 		} else if (type.equals("wagon")) {
-			Wagon wagon = wpdi.findByType(id);
+			Wagon wagon = subject.findWagon(id);
 			System.out.println(wagon.getSeats());
 
 		} else if (type.equals("locomotive")) {
-			LocomotiveFactory factory = new LocomotiveFactory();
-			Locomotive locomotive = factory.createLocomotive(id);
+			Locomotive locomotive = subject.findLocomotive(id);
 			System.out.println(locomotive.getSeats());
 
 		}
@@ -116,29 +96,17 @@ public class RichRailCli extends RichRailBaseListener {
 	public void exitDelcommand(RichRailParser.DelcommandContext ctx) {
 		String id = ctx.getChild(2).toString();
 		subject.deleteTrain(id);
-		if (tpdi.delete(id)) {
-			System.out.println(ctx.getChild(1).getChild(0) + " " + id + " deleted");
-		} else {
-			System.out.println(id + " does not exist");
-		}
+
 	}
 
 	@Override
 	public void exitRemcommand(RichRailParser.RemcommandContext ctx) {
 		String id = ctx.getChild(3).toString();
 		String stringNum = ctx.getChild(1).toString();
-		int num = Integer.parseInt(stringNum);
-		Train train = tpdi.findById(id);
-		List<RollingStock> rollingStock = train.getAllRollingStock();
-		rollingStock.remove(num);
-		System.out.println("rollingstock: ");
-		for (RollingStock r1 : rollingStock) {
-			System.out.println(r1.getType());
-		}
-		train.setAllRollingStock(rollingStock);
-		subject.updateTrain(train, id);
-		tpdi.update(train);
-		System.out.println("rolling component " + stringNum + " removed from train " + id);
+		int index = Integer.parseInt(stringNum);
+		Train train = subject.findTrain(id);
+		train.removeRollingStock(index);
+	
 	}
 
 	@Override

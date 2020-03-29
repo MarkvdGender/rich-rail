@@ -69,6 +69,13 @@ public class Train implements Cloneable{
 		return seats;
 	}
 	
+	public void addRollingStock(RollingStock r) {
+		allRollingStock.add(r);
+	}
+	
+	public void removeRollingStock(int index) {
+		allRollingStock.remove(index);
+	}
 	
 	
 	
