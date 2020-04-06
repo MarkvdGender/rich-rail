@@ -68,7 +68,6 @@ public class RichRailCli extends RichRailBaseListener {
 
 	@Override
 	public void exitDelcommand(RichRailParser.DelcommandContext ctx) {
-//		type = ctx.getChild(1).getChild(0).toString();
 		String id = ctx.getChild(2).toString();
 		if (type.equals("train")) {
 			subject.deleteTrain(id);

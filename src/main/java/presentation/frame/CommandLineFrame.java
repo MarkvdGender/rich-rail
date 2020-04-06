@@ -40,10 +40,7 @@ public class CommandLineFrame implements Frame {
 	private CommandLineFrame() {
 
 		subject.addObserver(this);
-//		frame maken
 		frame = new JFrame("command line");
-
-//        panel maken
 		JPanel panel = new JPanel();
 		panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 		panel.setLayout(new GridLayout());
@@ -51,8 +48,6 @@ public class CommandLineFrame implements Frame {
 		JPanel panel2 = new JPanel();
 		panel2.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 		panel2.setLayout(new GridLayout());
-
-//Content maken voor in de panel
 		JTextField input = new JTextField();
 		input.setPreferredSize(new Dimension(20, 20));
 
@@ -63,9 +58,7 @@ public class CommandLineFrame implements Frame {
 		output.setEditable(false);
 		output.setBackground(Color.BLACK);
 		output.setForeground(Color.GREEN);
-
 		log = new JTextArea();
-
 		log.setPreferredSize(new Dimension(100, 600));
 		log.setEditable(false);
 		log.setBackground(Color.GRAY);
@@ -89,25 +82,19 @@ public class CommandLineFrame implements Frame {
 					log.setText(logText);
 					myReader.close();
 				} catch (FileNotFoundException ex) {
-					// TODO Auto-generated catch block
 					ex.printStackTrace();
 				}
 
 			}
 		});
 
-//		content adden aan de panel
 		panel.add(input);
 		panel.add(label);
 		panel.add(execute);
-
 		panel2.add(output);
 		panel2.add(log);
-
-//		frame packen met settings
 		frame.add(panel, BorderLayout.SOUTH);
 		frame.add(panel2, BorderLayout.NORTH);
-
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(600, 800);
 
@@ -130,7 +117,7 @@ public class CommandLineFrame implements Frame {
 		for (Wagon w : wagons) {
 			trainsDisplay += "(" + w.getType() + ":" + w.getSeats() + ")";
 		}
-		trainsDisplay += "\n trains \n";
+		trainsDisplay += "\n trains: \n";
 		for (Train t : trains) {
 			trainsDisplay += "train " + t.getId() + ": \n";
 			trainsDisplay += "[" + t.getEngine().getType() + "]";

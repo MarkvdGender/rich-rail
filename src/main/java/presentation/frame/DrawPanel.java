@@ -14,7 +14,6 @@ import presentation.visualComponents.VisualComponent;
 import presentation.visualComponents.VisualEngine;
 import presentation.visualComponents.VisualLocomotive;
 import presentation.visualComponents.VisualWagon;
-import service.train.trainobserver.TrainObserver;
 import service.train.trainobserver.TrainSubject;
 
 public class DrawPanel extends JPanel implements Frame {
@@ -57,22 +56,6 @@ public class DrawPanel extends JPanel implements Frame {
 		}
 
 	}
-
-//	public JPanel getPanel() {
-//		return this;
-//	}
-
-//	public JFrame getFrame() {
-//
-////		DrawPanel d = DrawPanel.getInstance();
-////		JFrame jf = new JFrame();
-////		jf.setSize(600, 800);
-////		jf.setVisible(true);
-////		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-////		jf.add(d);
-//
-//		return jf;
-//	}
 
 	@Override
 	public void update(List<Train> trains, List<Wagon> wagons, List<Locomotive> locomotives) {

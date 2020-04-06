@@ -162,10 +162,14 @@ public class TrainSubject {
 	public void removeRollingStock(int index, String trainId) {
 		if (trainExists(trainId)) {
 			Train t = findTrain(trainId);
-			t.removeRollingStock(index);
-			trainService.update(t);
-			log.info("rollingstock on index " + index + " removed from train " + trainId);
-			notifyObservers();
+			if(index>t.getAllRollingStock().size()-1) {
+				log.warning("no rollingstock on index "+index);
+			}else {
+				t.removeRollingStock(index);
+				trainService.update(t);
+				log.info("rollingstock on index " + index + " removed from train " + trainId);
+				notifyObservers();
+			}
 		} else {
 			log.warning("train " + trainId + " does not exist");
 		}

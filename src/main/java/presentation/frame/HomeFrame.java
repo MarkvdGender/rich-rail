@@ -1,6 +1,7 @@
 package presentation.frame;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -57,7 +58,7 @@ public class HomeFrame extends JFrame implements Frame{
 						GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 				{
 					drawPanel = new JPanel();
-//					drawPanel.setBackground(Color.WHITE);
+					drawPanel.setBackground(Color.WHITE);
 					jPanel1.add(drawPanel, BorderLayout.CENTER);
 				}
 			}
@@ -126,7 +127,6 @@ public class HomeFrame extends JFrame implements Frame{
 			}
 
 			setSize(800, 600);
-//			setVisible(true);
 			setLocationRelativeTo(null);
 		} catch (Exception e) {
 			e.printStackTrace();

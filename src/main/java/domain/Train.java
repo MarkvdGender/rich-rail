@@ -22,7 +22,6 @@ public class Train implements Cloneable{
 			object = (Train) super.clone();
 			object.setId(id);
 		} catch (CloneNotSupportedException e) {
-			System.out.println("oh oh");
 			e.printStackTrace();
 		}
 		
