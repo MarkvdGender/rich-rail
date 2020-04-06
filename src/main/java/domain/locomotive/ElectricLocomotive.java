@@ -1,7 +1,5 @@
 package domain.locomotive;
 
-import domain.RollingStock;
-
 public class ElectricLocomotive implements Locomotive{
 	
 	String type;

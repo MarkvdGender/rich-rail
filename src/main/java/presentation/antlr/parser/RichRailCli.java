@@ -1,42 +1,19 @@
 package presentation.antlr.parser;
 
-import java.util.List;
-
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import domain.RollingStock;
-import domain.Train;
-import domain.Wagon;
-import domain.locomotive.Locomotive;
 import parser.RichRailBaseListener;
 import parser.RichRailParser;
-import persistence.TrainDao;
-import persistence.TrainPostgresDaoImpl;
-import persistence.WagonDao;
-import persistence.WagonPostgresDaoImpl;
-import presentation.WagonDirector;
-import service.locomotiveFactory.LocomotiveFactory;
-import service.observer.TrainSubject;
-import service.wagonBuilder.CustomWagonBuilder;
+import service.locomotive.LocomotiveService;
+import service.train.TrainService;
+import service.train.trainobserver.TrainSubject;
+import service.wagon.WagonService;
 
 public class RichRailCli extends RichRailBaseListener {
 
 	private String type;
 	private static TrainSubject subject = TrainSubject.getInstance();
-
-	@Override
-	public void enterCommand(RichRailParser.CommandContext ctx) {
-
-		// GAAT AF BIJ ELK COMMAND DUS OOK HIER KAN OVERLAPPENDE FUNCTIONALITEIT
-	}
-
-	@Override
-	public void enterNewcommand(RichRailParser.NewcommandContext ctx) {
-
-		// GAAT AF BIJ NEW TRAIN EN NEW WAGON DUS HIER KAN OVERLAPPENDE
-		// FUNCTIONALITEIT/attributen definieren om zo minder vaak get calls te doen
-	}
+	private TrainService trainService = new TrainService();
+	private WagonService wagonService = new WagonService();
+	private LocomotiveService locomotiveService = new LocomotiveService();
 
 	@Override
 	public void exitNewtraincommand(RichRailParser.NewtraincommandContext ctx) {
@@ -45,7 +22,7 @@ public class RichRailCli extends RichRailBaseListener {
 
 		if (ctx.getChildCount() == 7) {
 			String oldId = ctx.getChild(6).toString();
-			subject.cloneTrain(subject.findTrain(oldId), id);
+			subject.cloneTrain(oldId, id);
 
 		} else {
 			subject.newTrain(id, engine);
@@ -78,15 +55,12 @@ public class RichRailCli extends RichRailBaseListener {
 		String id = ctx.getChild(2).toString();
 
 		if (type.equals("train")) {
-			Train train = subject.findTrain(id);
-			System.out.println(train.getSeats());
+			trainService.getSeats(id);
 		} else if (type.equals("wagon")) {
-			Wagon wagon = subject.findWagon(id);
-			System.out.println(wagon.getSeats());
+			wagonService.getSeats(id);
 
 		} else if (type.equals("locomotive")) {
-			Locomotive locomotive = subject.findLocomotive(id);
-			System.out.println(locomotive.getSeats());
+			locomotiveService.getSeats(id);
 
 		}
 
@@ -94,8 +68,14 @@ public class RichRailCli extends RichRailBaseListener {
 
 	@Override
 	public void exitDelcommand(RichRailParser.DelcommandContext ctx) {
+//		type = ctx.getChild(1).getChild(0).toString();
 		String id = ctx.getChild(2).toString();
-		subject.deleteTrain(id);
+		if (type.equals("train")) {
+			subject.deleteTrain(id);
+		} else if (type.equals("wagon")) {
+			subject.deleteWagon(id);
+
+		}
 
 	}
 
@@ -104,24 +84,13 @@ public class RichRailCli extends RichRailBaseListener {
 		String id = ctx.getChild(3).toString();
 		String stringNum = ctx.getChild(1).toString();
 		int index = Integer.parseInt(stringNum);
-		Train train = subject.findTrain(id);
-		train.removeRollingStock(index);
-	
+		subject.removeRollingStock(index, id);
+
 	}
 
 	@Override
 	public void enterType(RichRailParser.TypeContext ctx) {
 		type = ctx.getChild(0).toString();
-	}
-
-	@Override
-	public void visitTerminal(TerminalNode node) {
-		System.out.println(node);
-	}
-
-	@Override
-	public void visitErrorNode(ErrorNode node) {
-		System.out.println(node);
 	}
 
 }

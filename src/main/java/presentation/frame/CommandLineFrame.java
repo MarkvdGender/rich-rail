@@ -6,7 +6,10 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -21,19 +24,21 @@ import domain.Train;
 import domain.Wagon;
 import domain.locomotive.Locomotive;
 import presentation.antlr.parser.Command;
-import service.observer.TrainObserver;
-import service.observer.TrainSubject;
+import service.train.trainobserver.TrainSubject;
 
-public class CommandLineFrame implements TrainObserver {
+public class CommandLineFrame implements Frame {
 
 	private TrainSubject subject = TrainSubject.getInstance();
 	private JFrame frame;
 	private Command command = new Command();
 	private JTextArea output = new JTextArea();
+	private JTextArea log = new JTextArea();
+	private String logText = "";
 	private String trainsDisplay = "";
+	private static CommandLineFrame instance;
 
-	public CommandLineFrame() {
-		
+	private CommandLineFrame() {
+
 		subject.addObserver(this);
 //		frame maken
 		frame = new JFrame("command line");
@@ -59,19 +64,34 @@ public class CommandLineFrame implements TrainObserver {
 		output.setBackground(Color.BLACK);
 		output.setForeground(Color.GREEN);
 
-		JTextArea log = new JTextArea();
+		log = new JTextArea();
 
 		log.setPreferredSize(new Dimension(100, 600));
 		log.setEditable(false);
 		log.setBackground(Color.GRAY);
 		log.setForeground(Color.WHITE);
-		log.setText(" Log");
-		log.append("\n log2");
 
 		JButton execute = new JButton("Execute");
 		execute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				command.command(input.getText());
+				try {
+					logText = "log: \n";
+					Scanner myReader = new Scanner(new File("log/log.txt"));
+					while (myReader.hasNextLine()) {
+						String data = myReader.nextLine();
+						if (data.contains("INFO: ")) {
+							logText += " " + (data.split("INFO: ")[1]) + "\n";
+						} else if (data.contains("WARNING: ")) {
+							logText += " " + (data.split("WARNING: ")[1]) + "\n";
+						}
+					}
+					log.setText(logText);
+					myReader.close();
+				} catch (FileNotFoundException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
 
 			}
 		});
@@ -90,8 +110,14 @@ public class CommandLineFrame implements TrainObserver {
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(600, 800);
-		frame.setVisible(true);
 
+	}
+
+	public static CommandLineFrame getInstance() {
+		if (instance == null) {
+			instance = new CommandLineFrame();
+		}
+		return instance;
 	}
 
 	@Override
@@ -115,6 +141,19 @@ public class CommandLineFrame implements TrainObserver {
 		}
 
 		output.setText(trainsDisplay);
+
+	}
+
+	@Override
+	public void showFrame() {
+		frame.setVisible(true);
+
+	}
+
+	@Override
+	public void hideFrame() {
+		frame.setVisible(false);
+
 	}
 
 }
