@@ -105,7 +105,10 @@ public class TrainSubject {
 
 	public void cloneTrain(String oldId, String newId) {
 		if (this.trainExists(oldId)) {
-			trains.add(trainService.cloneTrain(findTrain(oldId), newId));
+			Train t = trainService.cloneTrain(findTrain(oldId), newId);
+			trains.add(t);
+			trainService.save(t);
+			log.info("train " + newId + " cloned form train " + oldId);
 			notifyObservers();
 		} else {
 			log.warning("train " + oldId + " does not exist");
@@ -162,9 +165,9 @@ public class TrainSubject {
 	public void removeRollingStock(int index, String trainId) {
 		if (trainExists(trainId)) {
 			Train t = findTrain(trainId);
-			if(index>t.getAllRollingStock().size()-1) {
-				log.warning("no rollingstock on index "+index);
-			}else {
+			if (index > t.getAllRollingStock().size() - 1) {
+				log.warning("no rollingstock on index " + index);
+			} else {
 				t.removeRollingStock(index);
 				trainService.update(t);
 				log.info("rollingstock on index " + index + " removed from train " + trainId);
